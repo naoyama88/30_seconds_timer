@@ -1,1 +1,235 @@
-hello world
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>30 seconds timer for learning English words</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        main {
+            height: 100%;
+            width: 100%;
+            background-color: white;
+        }
+
+        .container {
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bgCream {
+            background-color: #FFFDD0;
+        }
+
+        .bgRed {
+            background-color: red;
+        }
+
+        .bgYellow {
+            background-color: yellow;
+        }
+
+        .key {
+            border-radius: 3px;
+            border: solid 1px black;
+        }
+
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: left;
+            justify-content: center;
+        }
+
+    </style>
+</head>
+<body>
+    <header></header>
+    <main>
+        <div class="container bgCream">
+            <span>30 seconds timer for learning English words</span>
+            <span id='total'>1:00:00</span>
+            <span id="short">30</span>
+            <button id='start'>Start</button>
+            <button id='pasue'>Pause</button>
+            <button id='resume'>Resume</button>
+            <br>
+            <button id='next'>Next</button>
+            <div>
+                <span>word count</span>
+                <span id='wordCount'>0</span>
+            </div>
+            <br>
+            <div class="buttons">
+                <span><span class="key">&nbsp1&nbsp</span>: Start button</span>
+                <span><span class="key">&nbsp2&nbsp</span>: Pause button</span>
+                <span><span class="key">&nbsp3&nbsp</span>: Resume button</span>
+                <br>
+                <span><span class="key">&nbspSpace&nbsp</span>: Next button</span>
+            </div>
+        </div>
+    </main>
+    <footer></footer>
+    <script>
+        const audio1 = new Audio('https://freesound.org/data/previews/80/80921_1022651-lq.mp3');
+        const audio2 = new Audio('https://freesound.org/data/previews/263/263133_2064400-lq.mp3');
+        const audio3 = new Audio('https://freesound.org/data/previews/221/221904_4128918-lq.mp3');
+        const elmContainer = document.getElementsByClassName('container')[0];
+        const elmStartButton = document.getElementById('start');
+        const elmPauseButton = document.getElementById('pasue');
+        const elmResumeButton = document.getElementById('resume');
+        const elmNextButton = document.getElementById('next');
+        const elmTotalTime = document.getElementById('total');
+        const elmShortTime = document.getElementById('short');
+        const elmWordCount = document.getElementById('wordCount');
+        let count = 0;
+        let isPaused = false, totalInterval, aWordInterval;
+
+        const beep = (audio) => {
+            audio.currentTime = 0;
+            audio.play();
+        };
+        const enableButton = (buttonElm) => {
+            buttonElm.disabled = false;
+        };
+        const disableButton = (buttonElm) => {
+            buttonElm.disabled = true;
+        };
+        const focusOnButton = (buttonElm) => {
+            buttonElm.focus();
+        };
+        const wordCountUp = () => {
+            count++;
+            elmWordCount.innerHTML = count;
+        };
+        const changeBgColorTemporarily = (cls, duration) => {
+            elmContainer.classList.add(cls);
+            setTimeout(() => {
+                elmContainer.classList.remove(cls);
+            }, duration);
+        };
+        const addBgColor = (cls) => {
+            elmContainer.classList.add(cls);
+        };
+        const removeBgColor = (cls) => {
+            elmContainer.classList.remove(cls);
+        };
+        const startTotalTimer = (duration, display) => {
+            let timer = duration - 1, minutes, seconds;
+            totalInterval = setInterval(function () {
+                if (!isPaused) {
+                    minutes = parseInt(timer / 60, 10);
+                    seconds = parseInt(timer % 60, 10);
+                    minutes = minutes < 10 ? "0" + minutes : minutes;
+                    seconds = seconds < 10 ? "0" + seconds : seconds;
+                    display.innerHTML = minutes + ":" + seconds;
+                    if (--timer < 0) {
+                        // finish
+                        clearInterval(aWordInterval);
+                        clearInterval(totalInterval);
+                        disableButton(elmStartButton);
+                        disableButton(elmPauseButton);
+                        disableButton(elmResumeButton);
+                        disableButton(elmNextButton);
+                        beep(audio3);
+                    }
+                }
+            }, 1000);
+        };
+        const startShortTimer = (duration, display) => {
+            let timer = duration - 1, seconds;
+            aWordInterval = setInterval(function () {
+                if (!isPaused) {
+                    seconds = parseInt(timer % 60, 10);
+                    seconds = seconds < 10 ? "0" + seconds : seconds;
+                    display.innerHTML = seconds;
+                    if (--timer < 0) {
+                        beep(audio1);
+                        changeBgColorTemporarily('bgRed', 500);
+                        display.innerHTML = 30;
+                        timer = 29;
+                        wordCountUp();
+                    }
+                }
+            }, 1000);
+        };
+
+        const init = () => {
+            // focusOnButton(elmStartButton);
+            disableButton(elmPauseButton);
+            disableButton(elmResumeButton);
+            disableButton(elmNextButton);
+            if (aWordInterval) clearInterval(aWordInterval);
+            if (totalInterval) clearInterval(totalInterval);
+            elmStartButton.addEventListener('click', () => {
+                const anHour = 60 * 60;
+                startTotalTimer(anHour, elmTotalTime);
+                startShortTimer(30, elmShortTime);
+                beep(audio1);
+                changeBgColorTemporarily('bgRed', 500);
+                disableButton(elmStartButton);
+                enableButton(elmPauseButton);
+                disableButton(elmResumeButton);
+                enableButton(elmNextButton);
+                // focusOnButton(elmNextButton);
+            });
+            elmNextButton.addEventListener('click', () => {
+                clearInterval(aWordInterval);
+                startShortTimer(30, elmShortTime);
+                beep(audio1);
+                changeBgColorTemporarily('bgRed', 500);
+                elmShortTime.innerHTML = 30;
+                timer = 29;
+                wordCountUp();
+            });
+            elmPauseButton.addEventListener('click', () => {
+                beep(audio2);
+                addBgColor('bgYellow');
+                isPaused = true;
+                disableButton(elmPauseButton);
+                enableButton(elmResumeButton);
+                disableButton(elmNextButton);
+            });
+            elmResumeButton.addEventListener('click', () => {
+                beep(audio2);
+                removeBgColor('bgYellow');
+                isPaused = false;
+                disableButton(elmResumeButton);
+                enableButton(elmPauseButton);
+                enableButton(elmNextButton);
+            });
+
+            document.addEventListener('keydown', (e) => {
+                // space
+                if (event.keyCode === 32) {
+                    elmNextButton.click();
+                    return;
+                }
+                // 1
+                if (event.keyCode === 49) {
+                    elmStartButton.click();
+                    return;
+                }
+                // 2
+                if (event.keyCode === 50) {
+                    elmPauseButton.click();
+                    return;
+                }
+                // 3
+                if (event.keyCode === 51) {
+                    elmResumeButton.click();
+                    return;
+                }
+            });
+        };
+        init();
+    </script>
+</body>
+</html>
